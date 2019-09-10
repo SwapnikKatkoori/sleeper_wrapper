@@ -66,7 +66,7 @@ class League(BaseApi):
 		clean_standings_list = []
 		for item in roster_standings_list:
 			clean_standings_list.append((item[3], str(item[0]), str(item[1]), str(item[2])))
-		
+
 		return clean_standings_list
 
 	def map_rosterid_to_ownerid(self, rosters ):
@@ -103,11 +103,18 @@ class League(BaseApi):
 			else:
 				team_name = "Team name not available"
 
-			team_score = self.get_team_score(team["starters"], score_type, week)
-			if team_score is None:
+			cust_score = team["custom_points"]
+			team_score = team["points"]
+
+			if cust_score is not None:
+				team_score = cust_score
+			elif team_score is None:
 				team_score = 0
+			else:
+				team_score = round(team_score,2)
 
 			team_score_tuple = (team_name, team_score)
+
 			if matchup_id not in scoreboards_dict:
 				scoreboards_dict[matchup_id] = [team_score_tuple]
 			else:
@@ -125,18 +132,6 @@ class League(BaseApi):
 				close_games_dict[key] = scoreboards[key]
 		return close_games_dict
 
-	def get_team_score(self,starters, score_type, week):
-		total_score = 0
-		stats = Stats()
-		week_stats = stats.get_week_stats("regular", 2019, week)
-		for starter in starters:
-			if stats.get_player_week_stats(week_stats, starter) is not None:
-				try:
-					total_score += stats.get_player_week_stats(week_stats, starter)[score_type]
-				except KeyError:
-					total_score += 0
-
-		return total_score
 
 	def empty_roster_spots(self):
 		pass
